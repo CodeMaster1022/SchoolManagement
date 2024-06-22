@@ -12,12 +12,30 @@ import {
 import { AccountCircle, School, Group } from "@mui/icons-material";
 import styled from "styled-components";
 const ChooseUser = ({ visitor }) => {
+  const navigate = useNavigate();
   const password = "zxc";
   const navigateHandler = (user) => {
-    if (user === "admin") {
+    if (user === "Admin") {
       if (visitor === "guest") {
         const email = "example@email.com";
         const fields = { email, password };
+      } else {
+        navigate("/Adminlogin");
+      }
+    } else if (user === "Student") {
+      if (visitor === "guest") {
+        const rollNum = 1;
+        const studentName = "Dipesh Awasthi";
+        const fields = { rollNum, studentName, password };
+      } else {
+        navigate("/Studentlogin");
+      }
+    } else if (user === "Teacher") {
+      if (visitor === "guest") {
+        const email = "tony@12";
+        const fields = { email, password };
+      } else {
+        navigate("/Teacherlogin");
       }
     }
   };
@@ -27,7 +45,7 @@ const ChooseUser = ({ visitor }) => {
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={6} md={4}>
             <StyledPaper elevation={3}>
-              <div>
+              <div onClick={() => navigateHandler("Admin")}>
                 <Box mb={2}>
                   <AccountCircle fontSize="large" />
                 </Box>
@@ -39,7 +57,7 @@ const ChooseUser = ({ visitor }) => {
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <StyledPaper elevation={3}>
-              <div>
+              <div onClick={() => navigateHandler("Student")}>
                 <Box mb={2}>
                   <School fontSize="large" />
                 </Box>
@@ -50,7 +68,7 @@ const ChooseUser = ({ visitor }) => {
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <StyledPaper elevation={3}>
-              <div>
+              <div onClick={() => navigateHandler("Teacher")}>
                 <Box mb={2}>
                   <Group fontSize="large" />
                 </Box>
