@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Grid,
   Box,
@@ -17,12 +18,22 @@ import {
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import bgpic from "../../assets/designlogin.jpg";
+import { registerUser } from "../redux/userRelated/userHandle";
 import { LightPurpleButton } from "../../component/buttonStyles";
 import styled from "styled-components";
 
 const defaultTheme = createTheme();
 const AdminRegisterPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { status, currentUser, response, error, currentRole } = useSelector(
+    (state) => state.user
+  );
   const [toggle, setToggle] = useState(false);
+  const [loader, setLoader] = useState(false);
+  const [message, setMessage] = useState("");
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>

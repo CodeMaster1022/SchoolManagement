@@ -4,12 +4,12 @@ import {
   stuffAdded,
   authSuccess,
   authFailed,
-  authError,
-  authLogout,
-  doneSuccess,
-  getDeleteSuccess,
+  // authError,
+  // authLogout,
+  // doneSuccess,
+  // getDeleteSuccess,
   getRequest,
-  getFailed,
+  // getFailed,
   getError,
 } from "./userSlice";
 
@@ -25,4 +25,22 @@ export const loginUser = (fields, role) => async (dispatch) => {
       dispatch(authSuccess(result.data));
     }
   } catch (error) {}
+};
+
+export const registerUser = (fields, role) => async (dispatch) => {
+  dispatch(getRequest());
+  try {
+    const result = await axios.post(`${backendUrl}/${role}Reg`, fields, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (result.data.schoolName) {
+      dispatch(authSuccess(result.data));
+    } else if (result.data.school) {
+      dispatch(stuffAdded());
+    } else {
+      dispatch(authFailed(result.data.message));
+    }
+  } catch (error) {
+    dispatch(getError(error));
+  }
 };
