@@ -2,6 +2,9 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
+import * as Yup from "yup";
 import {
   Grid,
   Box,
@@ -34,6 +37,52 @@ const AdminRegisterPage = () => {
   const [loader, setLoader] = useState(false);
   const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    if (
+      status === "success" ||
+      (currentUser !== null && currentRole === "Admin")
+    ) {
+      toast.warning(`Successfully registered`, { autoClose: 2500 });
+      // navigate("/Admin/dashboard");
+    } else if (status === "failed") {
+      toast.warning(`${response}`, { autoClose: 2500 });
+    } else if (status === "error") {
+      console.log(error);
+    }
+  }, [status, currentUser, response, error, currentRole]);
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      password: "",
+      schoolName: "",
+      email: "",
+    },
+    validationSchema: Yup.object().shape({
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Please enter the email"),
+      password: Yup.string()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+          "Not strong password"
+        )
+        .min(6, "Password must be more than 8 characters")
+        .required("password required"),
+      name: Yup.string()
+        .matches(/^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/, "Invalid name")
+        .required("Name must be required"),
+      schoolName: Yup.string()
+        .matches(/^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/, "Invalid Schoolname")
+        .required("Schoolname must be required"),
+    }),
+    onSubmit: (values) => {
+      console.log("=================>");
+      const role = "admin";
+      dispatch(registerUser(values, role));
+    },
+  });
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -57,44 +106,60 @@ const AdminRegisterPage = () => {
               You will be able to add students and faculty and manage the
               system.
             </Typography>
-            <Box component="form" noValidate sx={{ mt: 2 }}>
+            <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
               <TextField
                 margin="normal"
-                required
                 fullWidth
-                id="adminName"
+                type="text"
+                id="name"
                 label="Enter your name"
-                name="adminName"
-                autoComplete="name"
-                autoFocus
+                name="name"
+                onBlur={formik.onBlur}
+                value={formik.name}
+                onChange={formik.handleChange}
               />
+              {formik.touched.name && formik.errors.name ? (
+                <Typography color="error">{formik.errors.name}</Typography>
+              ) : null}
               <TextField
                 margin="normal"
-                required
                 fullWidth
                 id="schoolName"
+                type="text"
                 label="Create your school name"
                 name="schoolName"
-                autoComplete="off"
+                onBlur={formik.onBlur}
+                value={formik.schoolName}
+                onChange={formik.handleChange}
               />
+              {formik.touched.schoolName && formik.errors.schoolName ? (
+                <Typography color="error">
+                  {formik.errors.schoolName}
+                </Typography>
+              ) : null}
               <TextField
                 margin="normal"
-                required
                 fullWidth
                 id="email"
                 label="Enter your email"
                 name="email"
-                autoComplete="email"
+                onBlur={formik.onBlur}
+                value={formik.email}
+                onChange={formik.handleChange}
               />
+              {formik.touched.email && formik.errors.email ? (
+                <Typography color="error">{formik.errors.email}</Typography>
+              ) : null}
               <TextField
                 margin="normal"
-                required
                 fullWidth
                 name="password"
                 label="Password"
                 type={toggle ? "text" : "password"}
                 id="password"
-                autoComplete="current-password"
+                value={formik.password}
+                onBlur={formik.onBlur}
+                onChange={formik.handleChange}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -105,6 +170,9 @@ const AdminRegisterPage = () => {
                   ),
                 }}
               />
+              {formik.touched.password && formik.errors.password ? (
+                <Typography color="error">{formik.errors.password}</Typography>
+              ) : null}
               <Grid
                 container
                 sx={{ display: "flex", justifyContent: "space-between" }}
@@ -128,7 +196,7 @@ const AdminRegisterPage = () => {
                   <StyledLink to="/Adminlogin">Log in</StyledLink>
                 </Grid>
               </Grid>
-            </Box>
+            </form>
           </Box>
         </Grid>
         <Grid

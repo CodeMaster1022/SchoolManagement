@@ -27,12 +27,14 @@ export const loginUser = (fields, role) => async (dispatch) => {
   } catch (error) {}
 };
 
-export const registerUser = (fields, role) => async (dispatch) => {
+export const registerUser = (values, role) => async (dispatch) => {
+  console.log(values, role);
   dispatch(getRequest());
   try {
-    const result = await axios.post(`${backendUrl}/${role}Reg`, fields, {
+    const result = await axios.post(`${backendUrl}/${role}Reg`, values, {
       headers: { "Content-Type": "application/json" },
     });
+    console.log(result);
     if (result.data.schoolName) {
       dispatch(authSuccess(result.data));
     } else if (result.data.school) {
