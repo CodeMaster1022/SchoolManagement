@@ -35,21 +35,20 @@ const AdminRegisterPage = () => {
   );
   const [toggle, setToggle] = useState(false);
   const [loader, setLoader] = useState(false);
-  const [message, setMessage] = useState("");
-
   useEffect(() => {
     if (
       status === "success" ||
       (currentUser !== null && currentRole === "Admin")
     ) {
       toast.warning(`Successfully registered`, { autoClose: 2500 });
-      // navigate("/Admin/dashboard");
+      navigate("/Admin/dashboard");
     } else if (status === "failed") {
+      setLoader(false);
       toast.warning(`${response}`, { autoClose: 2500 });
     } else if (status === "error") {
       console.log(error);
     }
-  }, [status, currentUser, response, error, currentRole]);
+  }, [status, currentUser, response, error, currentRole, navigate]);
 
   const formik = useFormik({
     initialValues: {
@@ -77,7 +76,7 @@ const AdminRegisterPage = () => {
         .required("Schoolname must be required"),
     }),
     onSubmit: (values) => {
-      console.log("=================>");
+      setLoader(true);
       const role = "admin";
       dispatch(registerUser(values, role));
     },
@@ -188,7 +187,11 @@ const AdminRegisterPage = () => {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                <CircularProgress size={24} color="inherit" />
+                {loader ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <Typography>Register</Typography>
+                )}
               </LightPurpleButton>
               <Grid container>
                 <Grid>Already have an account?</Grid>

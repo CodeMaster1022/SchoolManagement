@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
+import { loginUser } from "./redux/userRelated/userHandle";
+import * as Yup from "yup";
 import {
   Button,
   Grid,
@@ -14,7 +18,6 @@ import {
   IconButton,
   InputAdornment,
   CircularProgress,
-  Backdrop,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -25,22 +28,72 @@ import styled from "styled-components";
 const defaultTheme = createTheme();
 
 const LoginPage = ({ role }) => {
-  const [toggle, setToggle] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
-  const [rollNumberError, setRollNumberError] = useState(false);
-  const [studentNameError, setStudentNameError] = useState(false);
-  const handleInputChange = (event) => {
-    const { name } = event.target;
-    if (name === "email") setEmailError(false);
-    if (name === "password") setPasswordError(false);
-    if (name === "rollNumber") setRollNumberError(false);
-    if (name === "studentName") setStudentNameError(false);
-  };
-  const handleSubmit = () => {
-    console.log("submit");
-  };
+  const { status, response, currentUser, error, currentRole } = useSelector(
+    (state) => state.user
+  );
+  const [toggle, setToggle] = useState(false);
+  const [loader, setLoader] = useState(false);
+  useEffect(() => {
+    if (status === "success" || currentUser !== null) {
+      if (currentRole === "Admin") {
+        // navigate("/Admin/dashboard");
+      }
+      if (currentRole === "Student") {
+        navigate("/Student/dashboard");
+      }
+      if (currentRole === "Teacher") {
+        navigate("/Teacher/dashboard");
+      }
+    } else if (status === "failed") {
+      toast.warning(`${response}`, { autoClose: 2500 });
+      setLoader(false);
+    } else if (status === "error") {
+      toast.warning(`Network Error`, { autoClose: 2500 });
+      setLoader(false);
+    }
+  }, [status, currentUser, response, error, currentRole, navigate]);
+
+  const formik = useFormik({
+    initialValues: {
+      studentName: "",
+      password: "",
+      rollNum: "",
+      email: "",
+    },
+    validationSchema: Yup.object().shape({
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Please enter the email"),
+      password: Yup.string()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+          "Not strong password"
+        )
+        .min(6, "Password must be more than 8 characters")
+        .required("password required"),
+    }),
+    onSubmit: (values) => {
+      setLoader(true);
+      if (role === "Admin") {
+        const data = {
+          email: values.email,
+          password: values.password,
+        };
+        dispatch(loginUser(data, role));
+      }
+      if (role === "Student") {
+        const data = {
+          rollNum: values.rollNum,
+          studentName: values.studentName,
+          password: values.studentName,
+        };
+        dispatch(loginUser(data, role));
+      }
+    },
+  });
   return (
     <ThemeProvider theme={defaultTheme}>
       <Grid container component="main" sx={{ height: "100vh" }}>
@@ -61,27 +114,20 @@ const LoginPage = ({ role }) => {
             <Typography variant="h7">
               Welcome back! Please enter your details
             </Typography>
-            <Box
-              component="form"
-              noValidate
-              onSubmit={handleSubmit}
-              sx={{ mt: 2 }}
-            >
+            <form onSubmit={formik.handleSubmit}>
               {role === "Student" ? (
                 <>
                   <TextField
                     margin="normal"
                     required
                     fullWidth
-                    id="rollNumber"
+                    id="rollNum"
                     label="Enter your Roll Number"
-                    name="rollNumber"
-                    autoComplete="off"
+                    name="rollNum"
                     type="number"
-                    autoFocus
-                    error={rollNumberError}
-                    helperText={rollNumberError && "Roll Number is required"}
-                    onChange={handleInputChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.rollNum}
+                    onChange={formik.handleChange}
                   />
                   <TextField
                     margin="normal"
@@ -90,11 +136,9 @@ const LoginPage = ({ role }) => {
                     id="studentName"
                     label="Enter your name"
                     name="studentName"
-                    autoComplete="name"
-                    autoFocus
-                    error={studentNameError}
-                    helperText={studentNameError && "Name is required"}
-                    onChange={handleInputChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.studentName}
+                    onChange={formik.handleChange}
                   />
                 </>
               ) : (
@@ -105,11 +149,9 @@ const LoginPage = ({ role }) => {
                   id="email"
                   label="Enter your email"
                   name="email"
-                  autoComplete="email"
-                  autoFocus
-                  error={emailError}
-                  helperText={emailError && "Email is required"}
-                  onChange={handleInputChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.email}
+                  onChange={formik.handleChange}
                 />
               )}
               <TextField
@@ -120,10 +162,6 @@ const LoginPage = ({ role }) => {
                 label="Password"
                 type={toggle ? "text" : "password"}
                 id="password"
-                autoComplete="current-password"
-                error={passwordError}
-                helperText={passwordError && "Password is required"}
-                onChange={handleInputChange}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -133,6 +171,9 @@ const LoginPage = ({ role }) => {
                     </InputAdornment>
                   ),
                 }}
+                onBlur={formik.handleBlur}
+                value={formik.password}
+                onChange={formik.handleChange}
               />
               <Grid
                 container
@@ -167,7 +208,7 @@ const LoginPage = ({ role }) => {
                   </Grid>
                 </Grid>
               )}
-            </Box>
+            </form>
           </Box>
         </Grid>
         <Grid
