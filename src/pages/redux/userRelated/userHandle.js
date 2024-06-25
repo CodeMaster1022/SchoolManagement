@@ -16,6 +16,7 @@ import {
 const backendUrl = "http://localhost:5000";
 
 export const loginUser = (fields, role) => async (dispatch) => {
+  console.log(fields, role);
   dispatch(authRequest());
   try {
     const result = await axios.post(`${backendUrl}/${role}Login`, fields, {
@@ -24,7 +25,9 @@ export const loginUser = (fields, role) => async (dispatch) => {
     if (result.data.role) {
       dispatch(authSuccess(result.data));
     }
-  } catch (error) {}
+  } catch (error) {
+    dispatch(getError(error));
+  }
 };
 
 export const registerUser = (values, role) => async (dispatch) => {

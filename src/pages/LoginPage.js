@@ -67,13 +67,6 @@ const LoginPage = ({ role }) => {
       email: Yup.string()
         .email("Invalid email address")
         .required("Please enter the email"),
-      password: Yup.string()
-        .matches(
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-          "Not strong password"
-        )
-        .min(6, "Password must be more than 8 characters")
-        .required("password required"),
     }),
     onSubmit: (values) => {
       setLoader(true);
@@ -90,6 +83,7 @@ const LoginPage = ({ role }) => {
           studentName: values.studentName,
           password: values.studentName,
         };
+        console.log("Student");
         dispatch(loginUser(data, role));
       }
     },
@@ -114,7 +108,7 @@ const LoginPage = ({ role }) => {
             <Typography variant="h7">
               Welcome back! Please enter your details
             </Typography>
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
               {role === "Student" ? (
                 <>
                   <TextField
@@ -142,17 +136,22 @@ const LoginPage = ({ role }) => {
                   />
                 </>
               ) : (
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Enter your email"
-                  name="email"
-                  onBlur={formik.handleBlur}
-                  value={formik.email}
-                  onChange={formik.handleChange}
-                />
+                <>
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Enter your email"
+                    name="email"
+                    onBlur={formik.handleBlur}
+                    value={formik.email}
+                    onChange={formik.handleChange}
+                  />
+                  {formik.touched.email && formik.errors.email ? (
+                    <Typography color="error">{formik.errors.email}</Typography>
+                  ) : null}
+                </>
               )}
               <TextField
                 margin="normal"
@@ -191,7 +190,7 @@ const LoginPage = ({ role }) => {
                 variant="contained"
                 sx={{ mt: 3 }}
               >
-                Login
+                {loader ? <CircularProgress /> : <Typography>Login</Typography>}
               </LightPurpleButton>
               <Button
                 fullWidth
